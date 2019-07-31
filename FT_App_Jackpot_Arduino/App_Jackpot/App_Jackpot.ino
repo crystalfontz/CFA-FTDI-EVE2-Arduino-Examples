@@ -39,6 +39,14 @@ Version 0.1 - initial draft of the release notes
 #include "ff.h"
 #endif
 
+//check lcd dimensions
+#ifdef CFAF240400C0_030SC_A1_2
+#error THIS DEMO WILL NOT RUN ON A DISPLAY THIS SMALL :(
+#endif
+
+#define JP_DWIDTH DispWidth
+#define JP_DHEIGHT DispHeight
+
 #define NORMAL_PRESSURE 1200
 #define MAX_ADDITIONAL_VEL 64
 #define BASE_VELOCITY 32
@@ -538,8 +546,8 @@ void jackpotSetup(){
 	JPot.selectedBetMultiplier=0;
 	JPot.selectedBetLine=12;
 	UI.visibleIconsHeight=VISIBLE_ICONS * ICON_HEIGHT;
-	UI.spinColumnXOffset=(DispWidth>>1) - ((SPIN_COLUMNS*ICON_WIDTH + SPIN_COLUMNS*COLUMN_GAP)>>1);  //center the spinning columns at the middle of the screen
-	UI.spinColumnYOffset= (((DispHeight-STATUS_BAR_HEIGHT)>>1) - ((UI.visibleIconsHeight)>>1));   //center the spinning columns at the middle of the screen
+	UI.spinColumnXOffset=(JP_DWIDTH>>1) - ((SPIN_COLUMNS*ICON_WIDTH + SPIN_COLUMNS*COLUMN_GAP)>>1);  //center the spinning columns at the middle of the screen
+	UI.spinColumnYOffset= (((JP_DHEIGHT-STATUS_BAR_HEIGHT)>>1) - ((UI.visibleIconsHeight)>>1));   //center the spinning columns at the middle of the screen
 
 
 	App_WrCoCmd_Buffer(phost,COLOR_RGB(0,0,0));
@@ -547,11 +555,11 @@ void jackpotSetup(){
 	App_WrCoCmd_Buffer(phost,CLEAR(1,1,1));
 	App_WrCoCmd_Buffer(phost,COLOR_RGB(255,255,255));
 #if defined(DISPLAY_RESOLUTION_WVGA)
-	Gpu_CoCmd_Text(phost,DispWidth>>1,(DispHeight>>1)-50,29,OPT_CENTER,"Loading bitmap...");
+	Gpu_CoCmd_Text(phost,JP_DWIDTH>>1,(JP_DHEIGHT>>1)-50,29,OPT_CENTER,"Loading bitmap...");
 #else
-	Gpu_CoCmd_Text(phost,DispWidth>>1,DispHeight>>1,29,OPT_CENTER,"Loading bitmap...");
+	Gpu_CoCmd_Text(phost,JP_DWIDTH>>1,JP_DHEIGHT>>1,29,OPT_CENTER,"Loading bitmap...");
 #endif
-	Gpu_CoCmd_Spinner(phost, (DispWidth>>1),(DispHeight>>1)+50,0,0);
+	Gpu_CoCmd_Spinner(phost, (JP_DWIDTH>>1),(JP_DHEIGHT>>1)+50,0,0);
 	//App_WrCoCmd_Buffer(phost,DISPLAY());
 	//Gpu_CoCmd_Swap(phost);
 	App_Flush_Co_Buffer(phost);
@@ -590,9 +598,9 @@ void jackpotSetup(){
 	App_WrCoCmd_Buffer(phost,BITMAP_HANDLE((14)));
 	App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(ramOffset));
 	App_WrCoCmd_Buffer(phost,BITMAP_LAYOUT(RGB565,2,STATUS_BAR_HEIGHT));
-	App_WrCoCmd_Buffer(phost,BITMAP_SIZE(NEAREST,REPEAT,BORDER,DispWidth,STATUS_BAR_HEIGHT));
+	App_WrCoCmd_Buffer(phost,BITMAP_SIZE(NEAREST,REPEAT,BORDER,JP_DWIDTH,STATUS_BAR_HEIGHT));
 #if defined(DISPLAY_RESOLUTION_WVGA)
-	App_WrCoCmd_Buffer(phost, BITMAP_SIZE_H(DispWidth>>9,STATUS_BAR_HEIGHT>>9));	
+	App_WrCoCmd_Buffer(phost, BITMAP_SIZE_H(JP_DWIDTH>>9,STATUS_BAR_HEIGHT>>9));	
 #endif
 	Gpu_Hal_LoadImageToMemory(phost,path,ramOffset,LOADIMAGE);
 	ramOffset+=(2*STATUS_BAR_HEIGHT);
@@ -682,7 +690,7 @@ void coinsAnimation(uint8_t coinAmount){
 		if(spinCoins[i].index>=7){
 			spinCoins[i].index=0;
 		}
-		if(((spinCoins[i].xPos+bitmapInfo[spinCoins[i].index+2].Width)<0) || (spinCoins[i].xPos>DispWidth) || (spinCoins[i].yPos>DispHeight)){
+		if(((spinCoins[i].xPos+bitmapInfo[spinCoins[i].index+2].Width)<0) || (spinCoins[i].xPos>JP_DWIDTH) || (spinCoins[i].yPos>JP_DHEIGHT)){
 			continue;
 		}
 		App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(bitmapInfo[spinCoins[i].index+2].Offset));
@@ -698,8 +706,8 @@ void coinsAnimation(uint8_t coinAmount){
 		spinCoins[i].yPos+=spinCoins[i].yVel;
 		spinCoins[i].yVel+=gravity;
 
-		if((spinCoins[i].yPos+bitmapInfo[spinCoins[i].index+2].Height)> (DispHeight-STATUS_BAR_HEIGHT) && !spinCoins[i].fall){
-			spinCoins[i].yPos=DispHeight-STATUS_BAR_HEIGHT-bitmapInfo[spinCoins[i].index+2].Height;
+		if((spinCoins[i].yPos+bitmapInfo[spinCoins[i].index+2].Height)> (JP_DHEIGHT-STATUS_BAR_HEIGHT) && !spinCoins[i].fall){
+			spinCoins[i].yPos=JP_DHEIGHT-STATUS_BAR_HEIGHT-bitmapInfo[spinCoins[i].index+2].Height;
 			spinCoins[i].yVel=-1 * ((spinCoins[i].yVel*3)/4);
 			App_Play_Sound(phost,COIN_COLLISION_SOUND,255,0x00); //play sound when the coin hits the status bar
 			if(spinCoins[i].yVel==0){
@@ -712,13 +720,13 @@ void coinsAnimation(uint8_t coinAmount){
 		if(spinCoins[i].index>=7){
 			spinCoins[i].index=0;
 		}
-		if(((spinCoins[i].xPos+bitmapInfo[spinCoins[i].index+2].Width)<0) || (spinCoins[i].xPos>DispWidth) || (spinCoins[i].yPos>DispHeight)){
+		if(((spinCoins[i].xPos+bitmapInfo[spinCoins[i].index+2].Width)<0) || (spinCoins[i].xPos>JP_DWIDTH) || (spinCoins[i].yPos>JP_DHEIGHT)){
 			continue;
 		}
 
 
-		if((spinCoins[i].yPos+bitmapInfo[spinCoins[i].index+2].Height)> (DispHeight-STATUS_BAR_HEIGHT) && !spinCoins[i].fall){
-			spinCoins[i].yPos=DispHeight-STATUS_BAR_HEIGHT-bitmapInfo[spinCoins[i].index+2].Height;
+		if((spinCoins[i].yPos+bitmapInfo[spinCoins[i].index+2].Height)> (JP_DHEIGHT-STATUS_BAR_HEIGHT) && !spinCoins[i].fall){
+			spinCoins[i].yPos=JP_DHEIGHT-STATUS_BAR_HEIGHT-bitmapInfo[spinCoins[i].index+2].Height;
 			spinCoins[i].yVel=-1 * ((spinCoins[i].yVel*3)/4);
 			App_Play_Sound(phost,COIN_COLLISION_SOUND,255,0x00); //play sound when the coin hits the status bar
 			if(spinCoins[i].yVel==0){
@@ -823,7 +831,7 @@ void drawPayoutTable(){
 		anyFruitTextLength= (uint8_t)stringPixelWidth(ANY_FRUIT_TEXT, anyFruitTextFont);
 		payoutNumWidth=(uint8_t)unsignedNumberPixelWidth(3,numFont);
 		anyFruitTextHeight=fontPixelHeight(anyFruitTextFont);
-		tableSize = DispHeight - STATUS_BAR_HEIGHT;
+		tableSize = JP_DHEIGHT - STATUS_BAR_HEIGHT;
 
 		firstTime=0;
 	}
@@ -1490,11 +1498,11 @@ void startingAnimation(){
 		App_WrCoCmd_Buffer(phost,COLOR_RGB(255,0,0));
 
 #if defined(DISPLAY_RESOLUTION_WQVGA)
-		Gpu_CoCmd_Text(phost,DispWidth>>1, UI.spinColumnYOffset+UI.visibleIconsHeight+30, 31, OPT_CENTER, "JACKPOT by Bridgetek");
+		Gpu_CoCmd_Text(phost,JP_DWIDTH>>1, UI.spinColumnYOffset+UI.visibleIconsHeight+30, 31, OPT_CENTER, "JACKPOT by Bridgetek");
 #elif defined(DISPLAY_RESOLUTION_QVGA)
-		Gpu_CoCmd_Text(phost,DispWidth>>1, UI.spinColumnYOffset+UI.visibleIconsHeight+30, 30, OPT_CENTER, "JACKPOT by Bridgetek");
+		Gpu_CoCmd_Text(phost,JP_DWIDTH>>1, UI.spinColumnYOffset+UI.visibleIconsHeight+30, 30, OPT_CENTER, "JACKPOT by Bridgetek");
 #elif defined(DISPLAY_RESOLUTION_WVGA)
-		Gpu_CoCmd_Text(phost,DispWidth>>1, UI.spinColumnYOffset+UI.visibleIconsHeight+60, 31, OPT_CENTER, "JACKPOT by Bridgetek");
+		Gpu_CoCmd_Text(phost,JP_DWIDTH>>1, UI.spinColumnYOffset+UI.visibleIconsHeight+60, 31, OPT_CENTER, "JACKPOT by Bridgetek");
 #endif
 
 		App_WrCoCmd_Buffer(phost,DISPLAY());
@@ -1512,8 +1520,8 @@ void startingAnimation(){
 
 	for(i=0;i<8;i++){
 		spinCoins[i].fall=FALSE;
-		spinCoins[i].xPos=DispWidth>>1;
-		spinCoins[i].yPos=DispHeight/3;
+		spinCoins[i].xPos=JP_DWIDTH>>1;
+		spinCoins[i].yPos=JP_DHEIGHT/3;
 		spinCoins[i].yVel=-2+ (nextRandomInt8(0) & 3)*-1;
 		nextRandomInt8(0);
 		if((nextRandomInt8(0)>>7) & 1){
@@ -1554,8 +1562,8 @@ void displayRewardText(uint16_t points){
 		if(!JPot.spinning && points>0){
 			App_WrCoCmd_Buffer(phost,COLOR_RGB(255,0,0));
 			App_WrCoCmd_Buffer(phost,COLOR_A(counter));
-			Gpu_CoCmd_Text(phost,DispWidth>>1,ICON_HEIGHT*2 + (ICON_HEIGHT>>1) , 31, OPT_RIGHTX, "+ ");
-			Gpu_CoCmd_Number(phost, DispWidth>>1,ICON_HEIGHT*2 + (ICON_HEIGHT>>1) , 31, 0, points);
+			Gpu_CoCmd_Text(phost,JP_DWIDTH>>1,ICON_HEIGHT*2 + (ICON_HEIGHT>>1) , 31, OPT_RIGHTX, "+ ");
+			Gpu_CoCmd_Number(phost, JP_DWIDTH>>1,ICON_HEIGHT*2 + (ICON_HEIGHT>>1) , 31, 0, points);
 			App_WrCoCmd_Buffer(phost,COLOR_A(255));
 		}
 		else{
@@ -1592,10 +1600,10 @@ void displaySelectedIcon(uint8_t index){
 			App_WrCoCmd_Buffer(phost,COLOR_RGB(255,255,255));
 			App_WrCoCmd_Buffer(phost,COLOR_A(counter));
 			if(index!=14){
-				App_WrCoCmd_Buffer(phost, VERTEX2II(DispWidth>>1,DispHeight>>1,index,0));
+				App_WrCoCmd_Buffer(phost, VERTEX2II(JP_DWIDTH>>1,JP_DHEIGHT>>1,index,0));
 			}
 			else{
-				Gpu_CoCmd_Text(phost,DispWidth>>1,DispHeight>>1,25, 0, ANY_FRUIT_TEXT);
+				Gpu_CoCmd_Text(phost,JP_DWIDTH>>1,JP_DHEIGHT>>1,25, 0, ANY_FRUIT_TEXT);
 			}
 			App_WrCoCmd_Buffer(phost,COLOR_A(255));
 		}
@@ -1704,36 +1712,36 @@ void statusBar(){
 	App_WrCoCmd_Buffer(phost, BEGIN(BITMAPS));
 
 	App_WrCoCmd_Buffer(phost,BLEND_FUNC(SRC_ALPHA,ZERO));
-	App_WrCoCmd_Buffer(phost, VERTEX2II(0,DispHeight-STATUS_BAR_HEIGHT,14,0));
+	App_WrCoCmd_Buffer(phost, VERTEX2II(0,JP_DHEIGHT-STATUS_BAR_HEIGHT,14,0));
 	App_WrCoCmd_Buffer(phost,BLEND_FUNC(SRC_ALPHA,ONE_MINUS_SRC_ALPHA));
 
 	//betting column amount
 	App_WrCoCmd_Buffer(phost,COLOR_RGB(0,0,0));
-	Gpu_CoCmd_Text(phost,(DispWidth>>1)+BUTTON_GAP, DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, COLUMN_TEXT);
-	Gpu_CoCmd_Number(phost, (DispWidth>>1)+BUTTON_GAP + columnTextPixelLength , DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.spinColumnSelected);
+	Gpu_CoCmd_Text(phost,(JP_DWIDTH>>1)+BUTTON_GAP, JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, COLUMN_TEXT);
+	Gpu_CoCmd_Number(phost, (JP_DWIDTH>>1)+BUTTON_GAP + columnTextPixelLength , JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.spinColumnSelected);
 
 	//total bet amount
 #if defined(DISPLAY_RESOLUTION_QVGA)
-	Gpu_CoCmd_Text(phost,resetTextPixelLength + BUTTON_GAP, DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, BET_TEXT);
-	Gpu_CoCmd_Number(phost, resetTextPixelLength + BUTTON_GAP*2 + betTextPixelLength , DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.totalBetAmount);
+	Gpu_CoCmd_Text(phost,resetTextPixelLength + BUTTON_GAP, JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, BET_TEXT);
+	Gpu_CoCmd_Number(phost, resetTextPixelLength + BUTTON_GAP*2 + betTextPixelLength , JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.totalBetAmount);
 #elif defined(DISPLAY_RESOLUTION_WQVGA) || defined(DISPLAY_RESOLUTION_WVGA)
-	Gpu_CoCmd_Text(phost,resetTextPixelLength + BUTTON_GAP +10, DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, BET_TEXT);
-	Gpu_CoCmd_Number(phost, resetTextPixelLength + BUTTON_GAP*2 + betTextPixelLength +8, DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.totalBetAmount);
+	Gpu_CoCmd_Text(phost,resetTextPixelLength + BUTTON_GAP +10, JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, BET_TEXT);
+	Gpu_CoCmd_Number(phost, resetTextPixelLength + BUTTON_GAP*2 + betTextPixelLength +8, JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.totalBetAmount);
 #endif
 
 	//selected bet line and its bet amount
-	Gpu_CoCmd_Text(phost,(DispWidth>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2, DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, LINE_TEXT);
-	Gpu_CoCmd_Number(phost, (DispWidth>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2 + lineTextPixelLength, DispHeight-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.selectedBetLine);
+	Gpu_CoCmd_Text(phost,(JP_DWIDTH>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2, JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, LINE_TEXT);
+	Gpu_CoCmd_Number(phost, (JP_DWIDTH>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2 + lineTextPixelLength, JP_DHEIGHT-((STATUS_BAR_HEIGHT*3)>>2) - BUTTON_GAP*2, betLineFont, 0, JPot.selectedBetLine);
 
 	//balance text and value
 	App_WrCoCmd_Buffer(phost,LINE_WIDTH(BUTTON_CURVATURE*16));
 
 #if defined(DISPLAY_RESOLUTION_WVGA)
-	Gpu_CoCmd_Text(phost,BUTTON_CURVATURE*2, DispHeight-(STATUS_BAR_HEIGHT>>1), betLineFont, 0, BALANCE_TEXT);
-	Gpu_CoCmd_Number(phost, BUTTON_CURVATURE*10 + betTextPixelLength + 35, DispHeight-(STATUS_BAR_HEIGHT>>1), betLineFont, 0, JPot.balance);
+	Gpu_CoCmd_Text(phost,BUTTON_CURVATURE*2, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), betLineFont, 0, BALANCE_TEXT);
+	Gpu_CoCmd_Number(phost, BUTTON_CURVATURE*10 + betTextPixelLength + 35, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), betLineFont, 0, JPot.balance);
 #else
-	Gpu_CoCmd_Text(phost,BUTTON_CURVATURE*2, DispHeight-(STATUS_BAR_HEIGHT>>1), betLineFont, 0, BALANCE_TEXT);
-	Gpu_CoCmd_Number(phost, BUTTON_CURVATURE*10 + betTextPixelLength + 35, DispHeight-(STATUS_BAR_HEIGHT>>1), betLineFont, OPT_RIGHTX, JPot.balance);
+	Gpu_CoCmd_Text(phost,BUTTON_CURVATURE*2, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), betLineFont, 0, BALANCE_TEXT);
+	Gpu_CoCmd_Number(phost, BUTTON_CURVATURE*10 + betTextPixelLength + 35, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), betLineFont, OPT_RIGHTX, JPot.balance);
 #endif
 
 	App_WrCoCmd_Buffer(phost,TAG_MASK(1));
@@ -1744,7 +1752,7 @@ void statusBar(){
 	App_WrCoCmd_Buffer(phost,BEGIN(RECTS));	
 	App_WrCoCmd_Buffer(phost,TAG(200));
 	App_WrCoCmd_Buffer(phost,VERTEX2F((UI.spinColumnXOffset)*16,0));
-	App_WrCoCmd_Buffer(phost,VERTEX2F(DispWidth*16, (DispHeight-STATUS_BAR_HEIGHT-BUTTON_GAP*2)*16));
+	App_WrCoCmd_Buffer(phost,VERTEX2F(JP_DWIDTH*16, (JP_DHEIGHT-STATUS_BAR_HEIGHT-BUTTON_GAP*2)*16));
 	App_WrCoCmd_Buffer(phost,COLOR_MASK(1,1,1,1));
 
 
@@ -1755,19 +1763,19 @@ void statusBar(){
 	App_WrCoCmd_Buffer(phost,TAG(201));
 #if defined(DISPLAY_RESOLUTION_WQVGA)
 	if(temp_tag==201 && !JPot.pendown)
-		Gpu_CoCmd_Button(phost,DispWidth-UI.spinButtonWidth-BUTTON_GAP, DispHeight-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, OPT_FLAT, "Spin");
+		Gpu_CoCmd_Button(phost,JP_DWIDTH-UI.spinButtonWidth-BUTTON_GAP, JP_DHEIGHT-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, OPT_FLAT, "Spin");
 	else
-		Gpu_CoCmd_Button(phost,DispWidth-UI.spinButtonWidth-BUTTON_GAP, DispHeight-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, 0, "Spin");
+		Gpu_CoCmd_Button(phost,JP_DWIDTH-UI.spinButtonWidth-BUTTON_GAP, JP_DHEIGHT-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, 0, "Spin");
 #elif defined(DISPLAY_RESOLUTION_QVGA)
 	if(temp_tag==201 && !JPot.pendown)
-		Gpu_CoCmd_Button(phost,DispWidth-UI.spinButtonWidth-BUTTON_GAP, DispHeight-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 29,OPT_FLAT, "Spin");
+		Gpu_CoCmd_Button(phost,JP_DWIDTH-UI.spinButtonWidth-BUTTON_GAP, JP_DHEIGHT-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 29,OPT_FLAT, "Spin");
 	else
-		Gpu_CoCmd_Button(phost,DispWidth-UI.spinButtonWidth-BUTTON_GAP, DispHeight-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 29, 0, "Spin");
+		Gpu_CoCmd_Button(phost,JP_DWIDTH-UI.spinButtonWidth-BUTTON_GAP, JP_DHEIGHT-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 29, 0, "Spin");
 #elif defined(DISPLAY_RESOLUTION_WVGA)
 	if(temp_tag==201 && !JPot.pendown)
-		Gpu_CoCmd_Button(phost,DispWidth-UI.spinButtonWidth-BUTTON_GAP, DispHeight-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, OPT_FLAT, "Spin");
+		Gpu_CoCmd_Button(phost,JP_DWIDTH-UI.spinButtonWidth-BUTTON_GAP, JP_DHEIGHT-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, OPT_FLAT, "Spin");
 	else
-		Gpu_CoCmd_Button(phost,DispWidth-UI.spinButtonWidth-BUTTON_GAP, DispHeight-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, 0, "Spin");
+		Gpu_CoCmd_Button(phost,JP_DWIDTH-UI.spinButtonWidth-BUTTON_GAP, JP_DHEIGHT-STATUS_BAR_HEIGHT + BUTTON_GAP, UI.spinButtonWidth ,STATUS_BAR_HEIGHT-BUTTON_GAP*2 , 30, 0, "Spin");
 #endif
 
 	App_WrCoCmd_Buffer(phost,COLOR_RGB(255,0,0));
@@ -1776,47 +1784,47 @@ void statusBar(){
 	//column selection button increase
 	App_WrCoCmd_Buffer(phost,TAG(202));
 	if(temp_tag==202)
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)+BUTTON_GAP, DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, OPT_FLAT, "+");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)+BUTTON_GAP, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, OPT_FLAT, "+");
 	else
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)+BUTTON_GAP, DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30,0, "+");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)+BUTTON_GAP, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30,0, "+");
 
 	//column selection button decrease
 	App_WrCoCmd_Buffer(phost,TAG(203));
 	if(temp_tag==203)
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)+BUTTON_GAP+2 + (UI.spinButtonWidth>>1), DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1 , 30,OPT_FLAT, "-");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)+BUTTON_GAP+2 + (UI.spinButtonWidth>>1), JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1 , 30,OPT_FLAT, "-");
 	else
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)+BUTTON_GAP+2 + (UI.spinButtonWidth>>1), DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1 , 30, 0, "-");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)+BUTTON_GAP+2 + (UI.spinButtonWidth>>1), JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1 , 30, 0, "-");
 
 	//coin selection button decrease
 	App_WrCoCmd_Buffer(phost,TAG(205));
 	if(temp_tag==205)
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1), DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, OPT_FLAT, "-");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1), JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, OPT_FLAT, "-");
 	else
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1), DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, 0, "-");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1), JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, 0, "-");
 
 	//coin selection button increase
 	App_WrCoCmd_Buffer(phost,TAG(204));
 	if(temp_tag==204)
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2, DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, OPT_FLAT, "+");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, OPT_FLAT, "+");
 	else
-		Gpu_CoCmd_Button(phost,(DispWidth>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2, DispHeight-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, 0, "+");
+		Gpu_CoCmd_Button(phost,(JP_DWIDTH>>1)-BUTTON_GAP-(UI.spinButtonWidth>>1)*2 -2, JP_DHEIGHT-(STATUS_BAR_HEIGHT>>1), UI.spinButtonWidth>>1 ,STATUS_BAR_HEIGHT>>1, 30, 0, "+");
 
 	//reset or new game button
 	App_WrCoCmd_Buffer(phost,TAG(206));
 	if(JPot.reset && !JPot.spinning){
 		if(temp_tag==206){
-			Gpu_CoCmd_Button(phost,count, DispHeight-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 21, OPT_FLAT, "N.G.");
+			Gpu_CoCmd_Button(phost,count, JP_DHEIGHT-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 21, OPT_FLAT, "N.G.");
 		}
 		else{
-			Gpu_CoCmd_Button(phost,count, DispHeight-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 21, 0, "N.G.");
+			Gpu_CoCmd_Button(phost,count, JP_DHEIGHT-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 21, 0, "N.G.");
 		}
 	}
 	else{
 		if(temp_tag==206){
-			Gpu_CoCmd_Button(phost,count, DispHeight-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 22, OPT_FLAT, RESET_TEXT);
+			Gpu_CoCmd_Button(phost,count, JP_DHEIGHT-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 22, OPT_FLAT, RESET_TEXT);
 		}
 		else{
-			Gpu_CoCmd_Button(phost,count, DispHeight-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 22, 0, RESET_TEXT);
+			Gpu_CoCmd_Button(phost,count, JP_DHEIGHT-STATUS_BAR_HEIGHT+BUTTON_GAP, resetTextPixelLength+5,(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2, 22, 0, RESET_TEXT);
 		}
 	}
 
@@ -1824,15 +1832,15 @@ void statusBar(){
 	App_WrCoCmd_Buffer(phost,TAG(207));
 	if(JPot.showPayoutTable){
 		if(temp_tag==207)
-			Gpu_CoCmd_Button(phost,0, DispHeight-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,payoutTableButtonHeight-BUTTON_CURVATURE, 22, OPT_FLAT, "exit");
+			Gpu_CoCmd_Button(phost,0, JP_DHEIGHT-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,payoutTableButtonHeight-BUTTON_CURVATURE, 22, OPT_FLAT, "exit");
 		else
-			Gpu_CoCmd_Button(phost,0, DispHeight-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,payoutTableButtonHeight-BUTTON_CURVATURE, 22, 0, "exit");
+			Gpu_CoCmd_Button(phost,0, JP_DHEIGHT-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,payoutTableButtonHeight-BUTTON_CURVATURE, 22, 0, "exit");
 	}
 	else{
 		if(temp_tag==207)
-			Gpu_CoCmd_Button(phost,0, DispHeight-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,/*(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2*/payoutTableButtonHeight-BUTTON_CURVATURE, 22,OPT_FLAT, PAYOUT_TEXT);
+			Gpu_CoCmd_Button(phost,0, JP_DHEIGHT-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,/*(STATUS_BAR_HEIGHT>>1)-BUTTON_GAP*2*/payoutTableButtonHeight-BUTTON_CURVATURE, 22,OPT_FLAT, PAYOUT_TEXT);
 		else
-			Gpu_CoCmd_Button(phost,0, DispHeight-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,payoutTableButtonHeight-BUTTON_CURVATURE, 22,0, PAYOUT_TEXT);
+			Gpu_CoCmd_Button(phost,0, JP_DHEIGHT-STATUS_BAR_HEIGHT-payoutTableButtonHeight, payoutTextPixelLength+5,payoutTableButtonHeight-BUTTON_CURVATURE, 22,0, PAYOUT_TEXT);
 	}
 
 	App_WrCoCmd_Buffer(phost,TAG_MASK(0));
@@ -1975,9 +1983,9 @@ void jackpot(){
 		App_WrCoCmd_Buffer(phost,BITMAP_HANDLE((15)));
 		App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(bitmapInfo[1].Offset));
 		App_WrCoCmd_Buffer(phost,BITMAP_LAYOUT(RGB565,bitmapInfo[1].Width,bitmapInfo[1].Height));
-		App_WrCoCmd_Buffer(phost,BITMAP_SIZE(NEAREST,REPEAT,REPEAT,DispWidth,DispHeight-STATUS_BAR_HEIGHT));
+		App_WrCoCmd_Buffer(phost,BITMAP_SIZE(NEAREST,REPEAT,REPEAT,JP_DWIDTH,JP_DHEIGHT-STATUS_BAR_HEIGHT));
 #if defined(DISPLAY_RESOLUTION_WVGA)
-		App_WrCoCmd_Buffer(phost, BITMAP_SIZE_H(DispWidth>>9,(DispHeight-STATUS_BAR_HEIGHT)>>9));
+		App_WrCoCmd_Buffer(phost, BITMAP_SIZE_H(JP_DWIDTH>>9,(JP_DHEIGHT-STATUS_BAR_HEIGHT)>>9));
 #endif
 		App_WrCoCmd_Buffer(phost,VERTEX2F(0,0));
 
@@ -2020,8 +2028,8 @@ void jackpot(){
 					}
 					for(i=0;i<spinCoinAmount;i++){
 						spinCoins[i].fall=FALSE;
-						spinCoins[i].xPos=DispWidth>>1; 
-						spinCoins[i].yPos=DispHeight/3;
+						spinCoins[i].xPos=JP_DWIDTH>>1; 
+						spinCoins[i].yPos=JP_DHEIGHT/3;
 						spinCoins[i].yVel=-2+ (nextRandomInt8(0) & 3)*-1;
 						nextRandomInt8(0);
 						if(nextRandomInt8(0) & 1){
@@ -2100,7 +2108,6 @@ void setup()
 	/* Show welcome screen, waiting user to press Play button */
 	//App_Show_WelcomeScreen(phost,info);
     /* Our main application */
-    
 
 	jackpotSetup();
 	startingAnimation();
