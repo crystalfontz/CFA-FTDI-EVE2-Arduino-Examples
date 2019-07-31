@@ -1,6 +1,6 @@
 
 # Crystalfontz FTDI EVE2 Arduino Examples
-This is a collection of modified FTDI/Bridgetek EVE Examples for use with Crystalfontz EVE2 accelerated display kits.
+This is a collection of modified FTDI/Bridgetek EVE Examples for use with Crystalfontz EVE2 accelerated display modules/kits.  
 The kits include a Crystalfontz EVE2 display module, a Crystalfontz CFA10098 breakout board, a Seeeduino v4.x and required cables. 
 
 Information on the Crystalfontz CFAF800480E0-050SC-A1-2 kit may be [found here](https://www.crystalfontz.com/product/cfaf800480e0050sca12-800x480-accelerated-tft-dev-kit).
