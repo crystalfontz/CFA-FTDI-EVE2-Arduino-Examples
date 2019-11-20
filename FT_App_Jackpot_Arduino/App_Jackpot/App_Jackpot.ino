@@ -40,8 +40,8 @@ Version 0.1 - initial draft of the release notes
 #endif
 
 //check lcd dimensions
-#ifdef CFAF240400C0_030SC_A1_2
-#error THIS DEMO WILL NOT RUN ON A DISPLAY THIS SMALL :(
+#if (defined(CFAF240400C0_030SC_A1_2) || defined(CFAF480128A0_039TC_A1_2))
+#error THIS EXAMPLE DOES NOT VISUALLY LOOK CORRECT DUE TO THE DISPLAYS SIZE, REMOVE THIS ERROR LINE TO TEST ANYWAY
 #endif
 
 #define JP_DWIDTH DispWidth
