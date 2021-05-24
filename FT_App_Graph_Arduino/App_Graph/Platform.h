@@ -21,8 +21,8 @@ RE-CERTIFICATION AS A RESULT OF MAKING THESE CHANGES.
 Abstract:
 This file contains is functions for all UI fields.
 
-Author : BRIDGETEK 
-Revision History: 
+Author : BRIDGETEK
+Revision History:
 0.1 - date 2013.04.24 - initial version
 0.2 - date 2014.04.28 - Split in individual files according to platform
 1.0 - date 2014.11.24 - Addition of FT81x
@@ -36,17 +36,20 @@ Revision History:
 
 /////////////////////////////////////////////////////////////
 
-//module selection (CHOOSE ONE)
+//module selection (---- CHOOSE ONE ----)
 
 //#define CFAF800480E0_050SC_A1_2
 //#define CFAF240400C0_030SC_A1_2
+//#define CFAF240400C1_030SC_A1_2
 //#define CFAF320240F_035TS_A1_2
 //#define CFAF480128A0_039TC_A1_2
 
 /////////////////////////////////////////////////////////////
 
 //check
-#if (!defined(CFAF800480E0_050SC_A1_2) && !defined(CFAF240400C0_030SC_A1_2) && !defined(CFAF320240F_035TS_A1_2) && !defined(CFAF480128A0_039TC_A1_2))
+#if (!defined(CFAF800480E0_050SC_A1_2) && !defined(CFAF240400C0_030SC_A1_2) && \
+	!defined(CFAF240400C1_030SC_A1_2) && \
+	!defined(CFAF320240F_035TS_A1_2) && !defined(CFAF480128A0_039TC_A1_2))
 //if you get a build error here, one of the module types above has not been un-commented
 #error TARGET MODULE TYPE NOT SELECTED, CHOOSE ONE IN PLATFORM.H!
 #endif
@@ -142,7 +145,7 @@ Revision History:
 #define DISPLAY_RESOLUTION_WVGA                 (1)
 #define FT81X_ENABLE                            (1)
 #define ENABLE_SPI_SINGLE                       (1)
-#define SDCARD_CS                             (10)
+#define SDCARD_CS                               (10)
 #define FT800_INT                               (7)
 #define FT800_PD_N                              (8)
 #define FT800_CS                                (9)
@@ -200,6 +203,85 @@ Revision History:
 #define VS    (1)     // Vertical Sync (in lines)  (1~20)
 #define VBP   (23-VS) // Vertical Back Porch (must be 23, includes VS)
 #define VFP   (7)     // Vertical Front Porch (7~22~147)
+#define VLP   (1)     // Vertical Line Padding (tot=511: 510~525~650)
+                      // FTDI needs at least 1 here
+// Define the constants needed by the FT8xx based on the timing
+// Active height of LCD display
+#define LCD_HEIGHT  (VLH)
+// Start of vertical sync pulse
+#define LCD_VSYNC0  (VFP)
+// End of vertical sync pulse
+#define LCD_VSYNC1  (VFP+VS)
+// Start of active screen
+#define LCD_VOFFSET (VFP+VS+VBP)
+// Total number of lines per screen
+#define LCD_VCYCLE  (VLH+VFP+VS+VBP+VLP)
+//============================================================================
+#endif
+
+#ifdef CFAF240400C1_030SC_A1_2
+//HAL Configs for Crystalfontz CFAF240400C0-030SC-A1
+#define DISPLAY_RESOLUTION_WVGA                 (1)
+#define FT81X_ENABLE                            (1)
+#define ENABLE_SPI_SINGLE                       (1)
+#define SDCARD_CS                               (10)
+#define FT800_INT                               (7)
+#define FT800_PD_N                              (8)
+#define FT800_CS                                (9)
+#define ARDUINO_PLATFORM_SPI                    (1)
+#define FT81X_CTOUCH /*ctouch bug fix enable*/
+//Timing for Crystalfontz CFAF240400C0-030SC-A1
+//============================================================================
+// Define RGB output pins order, determined by PCB layout
+#define LCD_SWIZZLE      (2)
+// Define active edge of PCLK. Observed by scope:
+//  0: Data is put out coincident with falling edge of the clock.
+//     Rising edge of the clock is in the middle of the data.
+//  1: Data is put out coincident with rising edge of the clock.
+//     Falling edge of the clock is in the middle of the data.
+#define LCD_PCLKPOL      (0)
+// LCD drive strength: 0=5mA, 1=10mA
+#define LCD_DRIVE_10MA   (0)
+// Spread Spectrum on RGB signals. Probably not a good idea at higher
+// PCLK frequencies.
+#define LCD_PCLK_CSPREAD (0)
+//This is a 24-bit display, so no need to dither.
+#define LCD_DITHER       (0)
+//----------------------------------------------------------------------------
+// Pixel clock divisor (based on 60MHz internal clock)
+//   0 = disable
+//   1 = 60MHz
+//   2 = 30MHz
+//   3 = 20MHz
+//   etc
+#define LCD_PCLK         (6)
+//----------------------------------------------------------------------------
+// Horizontal timing
+// Target 60Hz frame rate, using the largest possible line time in order to
+// maximize the time that the FT8xx has to process each line.
+#define HPX   (240)    // Horizontal Pixel Width
+#define HSW   (2)      // Horizontal Sync Width
+#define HBP   (4)      // Horizontal Back Porch (includes HSW)
+#define HFP   (2)      // Horizontal Front Porch
+#define HPP   (122)     // Horizontal Pixel Padding
+                       // FTDI needs at least 1 here
+// Define the constants needed by the FT8xx based on the timing
+// Active width of LCD display
+#define LCD_WIDTH   (HPX)
+// Start of horizontal sync pulse
+#define LCD_HSYNC0  (HFP)
+// End of horizontal sync pulse
+#define LCD_HSYNC1  (HFP+HSW)
+// Start of active line
+#define LCD_HOFFSET (HFP+HSW+HBP)
+// Total number of clocks per line
+#define LCD_HCYCLE  (HPX+HFP+HSW+HBP+HPP)
+//----------------------------------------------------------------------------
+// Vertical timing
+#define VLH   (400)   // Vertical Line Height
+#define VS    (2)     // Vertical Sync (in lines)  (1~20)
+#define VBP   (2)     // Vertical Back Porch (must be 23, includes VS)
+#define VFP   (41)    // Vertical Front Porch (7~22~147)
 #define VLP   (1)     // Vertical Line Padding (tot=511: 510~525~650)
                       // FTDI needs at least 1 here
 // Define the constants needed by the FT8xx based on the timing
